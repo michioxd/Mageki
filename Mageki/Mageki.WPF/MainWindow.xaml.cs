@@ -39,31 +39,13 @@ namespace Mageki.WPF
             StaticIO.OnStatusChanged += StaticIO_StatusChanged;
             UpdateStatusText();
 
-            // Mouse (fallback for non-touch devices)
             SkiaCanvas.MouseDown += Canvas_MouseDown;
             SkiaCanvas.MouseMove += Canvas_MouseMove;
             SkiaCanvas.MouseUp += Canvas_MouseUp;
-
-            // WPF Touch events (multi-touch fingers)
             SkiaCanvas.TouchDown += Canvas_TouchDown;
             SkiaCanvas.TouchMove += Canvas_TouchMove;
             SkiaCanvas.TouchUp += Canvas_TouchUp;
-            SkiaCanvas.LostTouchCapture += Canvas_LostTouchCapture;
-
-            // Stylus / Pen events (Surface Pen, active stylus)
-            SkiaCanvas.StylusDown += Canvas_StylusDown;
-            SkiaCanvas.StylusMove += Canvas_StylusMove;
-            SkiaCanvas.StylusUp += Canvas_StylusUp;
-            SkiaCanvas.StylusLeave += Canvas_StylusLeave;
-
-            // Disable manipulation to avoid the built-in 100 ms delay on touch
-            SkiaCanvas.IsManipulationEnabled = false;
-
-            // Prevent stylus from promoting to mouse events (avoids ghost clicks on tablet)
-            Stylus.SetIsPressAndHoldEnabled(SkiaCanvas, false);
-            Stylus.SetIsFlicksEnabled(SkiaCanvas, false);
-            Stylus.SetIsTapFeedbackEnabled(SkiaCanvas, false);
-            Stylus.SetIsTouchFeedbackEnabled(SkiaCanvas, false);
+            SkiaCanvas.IsManipulationEnabled = true;
         }
 
         private void UpdateStatusText()
@@ -190,10 +172,6 @@ namespace Mageki.WPF
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Ignore synthesised mouse events that WPF promotes from touch/stylus
-            if (e.StylusDevice != null)
-                return;
-
             SkiaCanvas.CaptureMouse();
             var pos = e.GetPosition(SkiaCanvas);
             _panel.OnTouchAction(
@@ -212,8 +190,6 @@ namespace Mageki.WPF
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.StylusDevice != null)
-                return;
             if (e.LeftButton != MouseButtonState.Pressed)
                 return;
             var pos = e.GetPosition(SkiaCanvas);
@@ -233,8 +209,6 @@ namespace Mageki.WPF
 
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.StylusDevice != null)
-                return;
             SkiaCanvas.ReleaseMouseCapture();
             _panel.OnTouchAction(0, TouchActionType.Released, SKPoint.Empty);
             SkiaCanvas.InvalidateVisual();
@@ -282,66 +256,6 @@ namespace Mageki.WPF
             _panel.OnTouchAction(e.TouchDevice.Id, TouchActionType.Released, SKPoint.Empty);
             SkiaCanvas.InvalidateVisual();
             e.Handled = true;
-        }
-
-        // Release touch when capture is lost (e.g. system dialog pops up)
-        private void Canvas_LostTouchCapture(object? sender, TouchEventArgs e)
-        {
-            _panel.OnTouchAction(e.TouchDevice.Id, TouchActionType.Cancelled, SKPoint.Empty);
-            SkiaCanvas.InvalidateVisual();
-        }
-
-        // Stylus / Pen — use a dedicated high ID range to avoid conflicts with finger touch IDs
-        private const long StylusTouchId = 0xF000_0001L;
-
-        private void Canvas_StylusDown(object? sender, StylusDownEventArgs e)
-        {
-            e.StylusDevice.Capture(SkiaCanvas);
-            var pos = e.GetPosition(SkiaCanvas);
-            _panel.OnTouchAction(
-                StylusTouchId,
-                TouchActionType.Pressed,
-                ToSkPoint(
-                    pos,
-                    SkiaCanvas.ActualWidth,
-                    SkiaCanvas.ActualHeight,
-                    SkiaCanvas.CanvasSize.Width,
-                    SkiaCanvas.CanvasSize.Height
-                )
-            );
-            SkiaCanvas.InvalidateVisual();
-            e.Handled = true;
-        }
-
-        private void Canvas_StylusMove(object? sender, StylusEventArgs e)
-        {
-            var pos = e.GetPosition(SkiaCanvas);
-            _panel.OnTouchAction(
-                StylusTouchId,
-                TouchActionType.Moved,
-                ToSkPoint(
-                    pos,
-                    SkiaCanvas.ActualWidth,
-                    SkiaCanvas.ActualHeight,
-                    SkiaCanvas.CanvasSize.Width,
-                    SkiaCanvas.CanvasSize.Height
-                )
-            );
-            SkiaCanvas.InvalidateVisual();
-            e.Handled = true;
-        }
-
-        private void Canvas_StylusUp(object? sender, StylusEventArgs e)
-        {
-            _panel.OnTouchAction(StylusTouchId, TouchActionType.Released, SKPoint.Empty);
-            SkiaCanvas.InvalidateVisual();
-            e.Handled = true;
-        }
-
-        private void Canvas_StylusLeave(object? sender, StylusEventArgs e)
-        {
-            _panel.OnTouchAction(StylusTouchId, TouchActionType.Cancelled, SKPoint.Empty);
-            SkiaCanvas.InvalidateVisual();
         }
 
         private static SKPoint ToSkPoint(

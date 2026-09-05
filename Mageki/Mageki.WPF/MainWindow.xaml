@@ -42,7 +42,7 @@
                     <ui:Button
                         x:Name="TestButton"
                         Content="Test"
-                        FontSize="11"
+                        FontSize="12"
                         Padding="12,6"
                         MinHeight="36"
                         MinWidth="60"
@@ -56,7 +56,7 @@
                     <ui:Button
                         x:Name="ServiceButton"
                         Content="Service"
-                        FontSize="11"
+                        FontSize="12"
                         Padding="12,6"
                         MinHeight="36"
                         MinWidth="72"
@@ -70,7 +70,7 @@
                     <ui:Button
                         x:Name="SettingsButton"
                         Content="Settings"
-                        FontSize="11"
+                        FontSize="12"
                         Padding="12,6"
                         MinHeight="36"
                         MinWidth="72"
@@ -81,7 +81,7 @@
                     <ui:Button
                         x:Name="FullScreenButton"
                         Content="Full screen"
-                        FontSize="11"
+                        FontSize="12"
                         Padding="12,6"
                         MinHeight="36"
                         MinWidth="88"
@@ -96,10 +96,6 @@
             Grid.Row="1"
             x:Name="SkiaCanvas"
             PaintSurface="SkiaCanvas_PaintSurface"
-            Focusable="True"
-            Stylus.IsPressAndHoldEnabled="False"
-            Stylus.IsFlicksEnabled="False"
-            Stylus.IsTapFeedbackEnabled="False"
-            Stylus.IsTouchFeedbackEnabled="False"/>
+            Focusable="True"/>
     </Grid>
 </ui:FluentWindow>
