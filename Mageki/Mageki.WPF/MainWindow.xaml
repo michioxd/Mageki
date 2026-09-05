@@ -23,7 +23,7 @@
         <ui:TitleBar
             Grid.Row="0"
             x:Name="TitleBar"
-            Title="Mageki.WPF"
+            Title="Mageki.WPF by michioxd"
             ShowMinimize="True"
             ShowMaximize="True"
             ShowClose="True"
@@ -40,20 +40,53 @@
             <ui:TitleBar.TrailingContent>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button
+                        x:Name="TestButton"
+                        Content="Test"
+                        FontSize="11"
+                        Padding="12,6"
+                        MinHeight="36"
+                        MinWidth="60"
+                        Margin="0,0,6,0"
+                        PreviewMouseLeftButtonDown="TestButton_MouseDown"
+                        PreviewMouseLeftButtonUp="TestButton_MouseUp"
+                        PreviewTouchDown="TestButton_TouchDown"
+                        PreviewTouchUp="TestButton_TouchUp"
+                        Stylus.IsPressAndHoldEnabled="False"
+                        ToolTip="Hold to send Test signal"/>
+                    <ui:Button
+                        x:Name="ServiceButton"
+                        Content="Service"
+                        FontSize="11"
+                        Padding="12,6"
+                        MinHeight="36"
+                        MinWidth="72"
+                        Margin="0,0,6,0"
+                        PreviewMouseLeftButtonDown="ServiceButton_MouseDown"
+                        PreviewMouseLeftButtonUp="ServiceButton_MouseUp"
+                        PreviewTouchDown="ServiceButton_TouchDown"
+                        PreviewTouchUp="ServiceButton_TouchUp"
+                        Stylus.IsPressAndHoldEnabled="False"
+                        ToolTip="Hold to send Service signal"/>
+                    <ui:Button
                         x:Name="SettingsButton"
                         Content="Settings"
                         FontSize="11"
-                        Padding="8,2"
-                        MinHeight="26"
+                        Padding="12,6"
+                        MinHeight="36"
+                        MinWidth="72"
+                        Margin="0,0,6,0"
                         Click="SettingsButton_Click"
+                        Stylus.IsPressAndHoldEnabled="False"
                         ToolTip="Settings"/>
                     <ui:Button
                         x:Name="FullScreenButton"
                         Content="Full screen"
                         FontSize="11"
-                        Padding="8,2"
-                        MinHeight="26"
+                        Padding="12,6"
+                        MinHeight="36"
+                        MinWidth="88"
                         Click="FullScreenButton_Click"
+                        Stylus.IsPressAndHoldEnabled="False"
                         ToolTip="Toggle full screen (F11)"/>
                 </StackPanel>
             </ui:TitleBar.TrailingContent>
@@ -63,6 +96,10 @@
             Grid.Row="1"
             x:Name="SkiaCanvas"
             PaintSurface="SkiaCanvas_PaintSurface"
-            Focusable="True"/>
+            Focusable="True"
+            Stylus.IsPressAndHoldEnabled="False"
+            Stylus.IsFlicksEnabled="False"
+            Stylus.IsTapFeedbackEnabled="False"
+            Stylus.IsTouchFeedbackEnabled="False"/>
     </Grid>
 </ui:FluentWindow>

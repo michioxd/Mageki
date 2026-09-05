@@ -234,6 +234,11 @@ namespace Mageki.WPF
             switch (type)
             {
                 case TouchActionType.Pressed:
+                    // If this ID is already tracked (duplicate Pressed without Released — can happen
+                    // with WM_POINTER / stylus jitter on Tablet PC), release it first to keep state clean.
+                    foreach (var obj in touchableObjects)
+                        obj.HandleTouchReleased(id);
+
                     foreach (var obj in touchableObjects)
                     {
                         if (

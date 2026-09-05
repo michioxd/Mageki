@@ -137,6 +137,9 @@ namespace Mageki.Drawables
 
         public override bool HandleTouchPressed(long id, SKPoint point)
         {
+            // Guard against duplicate press events (can happen with WM_POINTER / stylus on Tablet PC)
+            if (touchPoints.ContainsKey(id))
+                return true;
             touchPoints.Add(id, point);
             if (AntiMisTouch)
             {

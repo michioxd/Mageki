@@ -38,8 +38,9 @@ namespace Mageki
 
     public enum OptionButtons : byte
     {
-        Test = 0b01,
-        Service = 0b10,
+        Test = 0b001,
+        Service = 0b010,
+        Coin = 0b100,
     }
 
     public abstract class IO : IDisposable
