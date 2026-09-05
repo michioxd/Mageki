@@ -145,22 +145,39 @@ namespace Mageki.WPF
         {
             if (_isFullScreen)
             {
+                _isFullScreen = false;
                 WindowStyle = _previousWindowStyle;
                 ResizeMode = _previousResizeMode;
                 WindowState = _previousWindowState;
-                _isFullScreen = false;
                 FullScreenButton.Content = "Full screen";
                 return;
             }
 
-            _previousWindowState = WindowState;
             _previousWindowStyle = WindowStyle;
             _previousResizeMode = ResizeMode;
+            _previousWindowState =
+                WindowState == WindowState.Maximized ? WindowState.Normal : WindowState;
+
+            if (WindowState == WindowState.Maximized)
+                WindowState = WindowState.Normal;
 
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
             WindowState = WindowState.Maximized;
             _isFullScreen = true;
+            FullScreenButton.Content = "Exit full screen";
+        }
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            base.OnStateChanged(e);
+            if (_isFullScreen && WindowState != WindowState.Maximized)
+            {
+                _isFullScreen = false;
+                FullScreenButton.Content = "Full screen";
+                WindowStyle = _previousWindowStyle;
+                ResizeMode = _previousResizeMode;
+            }
         }
 
         protected override void OnClosed(EventArgs e)
