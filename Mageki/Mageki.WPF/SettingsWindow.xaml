@@ -9,7 +9,9 @@
     MinWidth="420"
     MinHeight="480"
     WindowStartupLocation="CenterOwner"
-    ExtendsContentIntoTitleBar="True">
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    Background="Transparent">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48"/>
@@ -221,9 +223,25 @@
                                 x:Name="AimeBox"
                                 MaxLength="20"/>
                 </Grid>
+                <TextBlock Text="About Mageki.WPF"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,8"/>
+                <TextBlock Margin="0,4,0,4"
+                           TextWrapping="Wrap">
+                    <Run Text="Original Mageki forked from"/>
+                    <Hyperlink NavigateUri="https://github.com/Sanheiii/Mageki"
+                               RequestNavigate="Hyperlink_RequestNavigate">Sanheiii/Mageki</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="0,4,0,16"
+                           TextWrapping="Wrap">
+                    <Run Text="WPF version by michioxd."/>
+                    <Hyperlink NavigateUri="https://github.com/michioxd/Mageki"
+                               RequestNavigate="Hyperlink_RequestNavigate">GitHub</Hyperlink>
+                </TextBlock>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right"
-                            Margin="0,12,0,0">
+                            Margin="0,4,0,0">
                     <ui:Button Content="Save"
                                Width="90"
                                IsDefault="True"

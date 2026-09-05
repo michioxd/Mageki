@@ -105,16 +105,14 @@ namespace Mageki
 
         private void Disconnect()
         {
-            if (client?.Connected ?? false)
-            {
-                var tmpClient = client;
-                var tmpStream = networkStream;
-                client = null;
-                networkStream = null;
-                tmpClient?.Dispose();
-                tmpStream?.Dispose();
+            var tmpClient = client;
+            var tmpStream = networkStream;
+            client = null;
+            networkStream = null;
+            tmpClient?.Dispose();
+            tmpStream?.Dispose();
+            if (Status == Status.Connected)
                 Status = Status.Disconnected;
-            }
         }
 
         public override void SetGameButton(int index, byte value)
@@ -188,9 +186,9 @@ namespace Mageki
         /// </summary>
         private void PollThread()
         {
-            try
+            while (!disposedValue)
             {
-                while (!disposedValue)
+                try
                 {
                     var stream = networkStream;
                     if ((!client?.Connected) ?? true || stream == null)
@@ -201,15 +199,20 @@ namespace Mageki
                     int len = stream.Read(_inBuffer, 0, 1);
                     if (len <= 0)
                     {
-                        Reconnect();
+                        // Server closed the connection (EOF)
+                        Disconnect();
                         continue;
                     }
                     Receive((MessageType)_inBuffer[0]);
                 }
-            }
-            catch (Exception)
-            {
-                Disconnect();
+                catch (Exception ex)
+                {
+                    if (!disposedValue)
+                    {
+                        Debug.WriteLine(ex);
+                        Disconnect();
+                    }
+                }
             }
         }
 

@@ -26,7 +26,7 @@ namespace Mageki.WPF
         {
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
-            SystemThemeWatcher.Watch(this, WindowBackdropType.None, false);
+            SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
             Mageki.PreferenceStore.Current = new WpfPreferenceStore();
 
             ServiceLocator.Register<Mageki.DependencyServices.ICloseApplication>(

@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -15,6 +17,7 @@ namespace Mageki.WPF
             _loading = true;
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
+            SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
             LoadSettings();
         }
 
@@ -97,6 +100,12 @@ namespace Mageki.WPF
                 BottomMarginText.Text = BottomMarginSlider.Value.ToString("F2");
             if (LinearitySlider != null && LinearityText != null)
                 LinearityText.Text = $"1/{(int)LinearitySlider.Value}";
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)

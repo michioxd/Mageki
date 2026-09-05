@@ -12,6 +12,8 @@
     MinWidth="400"
     WindowStartupLocation="CenterScreen"
     ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    Background="Transparent"
     PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Grid.RowDefinitions>
@@ -23,7 +25,7 @@
         <ui:TitleBar
             Grid.Row="0"
             x:Name="TitleBar"
-            Title="Mageki.WPF by michioxd"
+            Title="Mageki.WPF"
             ShowMinimize="True"
             ShowMaximize="True"
             ShowClose="True"
