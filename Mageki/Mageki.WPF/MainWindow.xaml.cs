@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Mageki.Drawables;
 using Mageki.TouchTracking;
+using Mageki.Utils;
 using Mageki.WPF.DependencyServices;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -38,6 +42,7 @@ namespace Mageki.WPF
 
             StaticIO.OnStatusChanged += StaticIO_StatusChanged;
             UpdateStatusText();
+            UpdateCardButton();
 
             SkiaCanvas.MouseDown += Canvas_MouseDown;
             SkiaCanvas.MouseMove += Canvas_MouseMove;
@@ -57,6 +62,45 @@ namespace Mageki.WPF
                 Status.Connected => System.Windows.Media.Brushes.LightGreen,
                 _ => System.Windows.Media.Brushes.Gray,
             };
+        }
+
+        private void UpdateCardButton()
+        {
+            CardButton.IsEnabled = !string.IsNullOrWhiteSpace(Settings.AimeId);
+        }
+
+        private bool _cardScanning;
+
+        private async void CardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_cardScanning)
+                return;
+
+            // Build 10-byte BCD packet from configured Aime ID string.
+            byte[] aimePacket = Enumerable.Repeat((byte)0xFF, 10).ToArray();
+            if (BigInteger.TryParse(Settings.AimeId, out BigInteger id))
+            {
+                byte[] bcd = id.ToBcd();
+                // right-align into 10 bytes (pad with 0x00 on the left)
+                int offset = 10 - bcd.Length;
+                Array.Copy(bcd, 0, aimePacket, offset, bcd.Length);
+            }
+
+            _cardScanning = true;
+            CardButton.IsEnabled = false;
+            CardButton.Content = "Scanning...";
+            try
+            {
+                StaticIO.SetAime(1, aimePacket);
+                await Task.Delay(3000);
+                StaticIO.SetAime(0, Array.Empty<byte>());
+            }
+            finally
+            {
+                _cardScanning = false;
+                CardButton.Content = "Card";
+                UpdateCardButton();
+            }
         }
 
         private void StaticIO_StatusChanged(object sender, OnStatusChangedEventArgs e)
@@ -79,7 +123,12 @@ namespace Mageki.WPF
             }
 
             _settingsWindow = new SettingsWindow { Owner = this };
-            _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+            _settingsWindow.Closed += (_, _) =>
+            {
+                _settingsWindow = null;
+                // Refresh card button state after settings are saved.
+                UpdateCardButton();
+            };
             _settingsWindow.Show();
         }
 

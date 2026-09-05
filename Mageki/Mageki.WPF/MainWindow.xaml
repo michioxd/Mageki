@@ -42,6 +42,17 @@
             <ui:TitleBar.TrailingContent>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button
+                        x:Name="CardButton"
+                        Content="Card"
+                        FontSize="12"
+                        Padding="12,6"
+                        MinHeight="36"
+                        MinWidth="60"
+                        Margin="0,0,6,0"
+                        Click="CardButton_Click"
+                        Stylus.IsPressAndHoldEnabled="False"
+                        ToolTip="Send configured Aime card ID to server"/>
+                    <ui:Button
                         x:Name="TestButton"
                         Content="Test"
                         FontSize="12"
