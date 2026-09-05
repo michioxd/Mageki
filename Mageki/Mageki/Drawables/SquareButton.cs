@@ -1,15 +1,26 @@
-﻿using SkiaSharp;
-
-using System;
+﻿using System;
+using SkiaSharp;
 
 namespace Mageki.Drawables
 {
     public class SquareButton : ButtonBase
     {
         public const float colorSaturation = 0.6f;
-        public ButtonColors Color { get => GetValue(ButtonColors.Blank); set => SetValueWithNotify(value); }
-        public float CornerRatio { get => GetValue(0.10f); set => SetValueWithNotify(value); }
-        public float BorderWidthRatio { get => GetValue(0.07f); set => SetValueWithNotify(value); }
+        public ButtonColors Color
+        {
+            get => GetValue(ButtonColors.Blank);
+            set => SetValueWithNotify(value);
+        }
+        public float CornerRatio
+        {
+            get => GetValue(0.10f);
+            set => SetValueWithNotify(value);
+        }
+        public float BorderWidthRatio
+        {
+            get => GetValue(0.07f);
+            set => SetValueWithNotify(value);
+        }
 
         SKPath borderPath = new SKPath();
         SKPath buttonPath = new SKPath();
@@ -24,19 +35,16 @@ namespace Mageki.Drawables
                 base.NotifyChanged(nameof(BorderColor));
             }
         }
-        private SKPaint buttonPaint = new SKPaint()
-        {
-            Style = SKPaintStyle.Fill,
-        };
+        private SKPaint buttonPaint = new SKPaint() { Style = SKPaintStyle.Fill };
         private SKPaint buttonLightPaint = new SKPaint()
         {
             Style = SKPaintStyle.Fill,
-            MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, 20)
+            MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, 20),
         };
         private SKPaint borderPaint = new SKPaint
         {
             Style = SKPaintStyle.Fill,
-            Color = new SKColor(0xFF222222)
+            Color = new SKColor(0xFF222222),
         };
         private SKPaint holdMaskPaint = new SKPaint()
         {
@@ -49,14 +57,17 @@ namespace Mageki.Drawables
         {
             Color = ButtonColors.Blank;
         }
+
         public override void Update()
         {
             float sideLength = Size.Width - Padding.X * 2;
             var strokeWidth = BorderWidthRatio * sideLength;
-            SKRect borderRect = SKRect.Create(Position.X + Size.Width / 2 - sideLength / 2,
+            SKRect borderRect = SKRect.Create(
+                Position.X + Size.Width / 2 - sideLength / 2,
                 Position.Y + Padding.Y,
                 sideLength,
-                sideLength);
+                sideLength
+            );
             SKRect buttonRect = SKRect.Inflate(borderRect, -strokeWidth, -strokeWidth);
             float borderCorner = borderRect.Height * CornerRatio;
             float buttonCorner = buttonRect.Height * CornerRatio;
@@ -70,14 +81,18 @@ namespace Mageki.Drawables
             buttonPath.AddRoundRect(buttonRect, buttonCorner, buttonCorner);
 
             SKColor color1 = Colors[Color];
-            SKColor color2 = new SKColor((byte)(color1.Red * colorSaturation + 255 * (1 - colorSaturation)),
+            SKColor color2 = new SKColor(
+                (byte)(color1.Red * colorSaturation + 255 * (1 - colorSaturation)),
                 (byte)(color1.Green * colorSaturation + 255 * (1 - colorSaturation)),
-                (byte)(color1.Blue * colorSaturation + 255 * (1 - colorSaturation)));
-            buttonPaint.Color= color1;
-            buttonPaint.Shader = SKShader.CreateRadialGradient(new SKPoint(borderRect.MidX, borderRect.MidY),
-                MathF.Max(borderRect.Height, borderRect.Width),
+                (byte)(color1.Blue * colorSaturation + 255 * (1 - colorSaturation))
+            );
+            buttonPaint.Color = color1;
+            buttonPaint.Shader = SKShader.CreateRadialGradient(
+                new SKPoint(borderRect.MidX, borderRect.MidY),
+                Math.Max(borderRect.Height, borderRect.Width),
                 new SKColor[] { color2, color1 },
-                SKShaderTileMode.Mirror);
+                SKShaderTileMode.Mirror
+            );
             buttonLightPaint.Shader = buttonPaint.Shader;
 
             base.Update();
@@ -85,7 +100,8 @@ namespace Mageki.Drawables
 
         public override void Draw(SKCanvas canvas)
         {
-            if (!Visible) return;
+            if (!Visible)
+                return;
             base.Draw(canvas);
             canvas.DrawPath(borderPath, borderPaint);
             canvas.DrawPath(buttonPath, buttonPaint);

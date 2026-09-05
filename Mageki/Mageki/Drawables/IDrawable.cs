@@ -1,8 +1,6 @@
-﻿using SkiaSharp;
-
-using System;
+﻿using System;
 using System.Text;
-
+using SkiaSharp;
 using Xamarin.Forms;
 
 namespace Mageki.Drawables

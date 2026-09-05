@@ -3,6 +3,6 @@
     public enum Side : byte
     {
         Left,
-        Right
+        Right,
     }
 }

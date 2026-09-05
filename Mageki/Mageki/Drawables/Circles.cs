@@ -1,11 +1,10 @@
-﻿using SkiaSharp;
-
-using System;
+﻿using System;
 using System.ComponentModel;
+using SkiaSharp;
 
 namespace Mageki.Drawables
 {
-    internal class Circles : Drawable
+    public class Circles : Drawable
     {
         public Keyboard keyboard;
 
@@ -14,12 +13,19 @@ namespace Mageki.Drawables
             this.keyboard = keyboard;
             keyboard.PropertyChanged += Keyboard_PropertyChanged;
         }
+
         public override void Update()
         {
-            var n = BitConverter.GetBytes(keyboard.ShowLeft)[0] + BitConverter.GetBytes(keyboard.ShowRight)[0];
-            if (n == 0) return;
+            var n =
+                BitConverter.GetBytes(keyboard.ShowLeft)[0]
+                + BitConverter.GetBytes(keyboard.ShowRight)[0];
+            if (n == 0)
+                return;
             keyboard.Update();
-            var size = new SKSize((keyboard.Size.Width - keyboard.Padding.X * 2 - keyboard.Spacing * (n / 2)) / n, keyboard.Size.Height - keyboard.Padding.Y * n);
+            var size = new SKSize(
+                (keyboard.Size.Width - keyboard.Padding.X * 2 - keyboard.Spacing * (n / 2)) / n,
+                keyboard.Size.Height - keyboard.Padding.Y * n
+            );
             float baseRadius = size.Width / 2.8f;
             radius0 = baseRadius * 1.2f;
             radius1 = baseRadius * 1.0f;
@@ -34,20 +40,46 @@ namespace Mageki.Drawables
 
             if (keyboard.ShowLeft)
             {
-                lCenter = new SKPoint(keyboard.Left[1].BoundingBox.MidX, keyboard.Left[1].BoundingBox.Top + keyboard.Left[1].BoundingBox.Width / 2);
-                var oval1 = new SKRect(lCenter.X - radius2, lCenter.Y - radius2, lCenter.X + radius2, lCenter.Y + radius2);
+                lCenter = new SKPoint(
+                    keyboard.Left[1].BoundingBox.MidX,
+                    keyboard.Left[1].BoundingBox.Top + keyboard.Left[1].BoundingBox.Width / 2
+                );
+                var oval1 = new SKRect(
+                    lCenter.X - radius2,
+                    lCenter.Y - radius2,
+                    lCenter.X + radius2,
+                    lCenter.Y + radius2
+                );
                 path1.AddArc(oval1, 40, 100);
                 path1.AddArc(oval1, -40, -100);
-                var oval3 = new SKRect(lCenter.X - radius3, lCenter.Y - radius3, lCenter.X + radius3, lCenter.Y + radius3);
+                var oval3 = new SKRect(
+                    lCenter.X - radius3,
+                    lCenter.Y - radius3,
+                    lCenter.X + radius3,
+                    lCenter.Y + radius3
+                );
                 path2.AddArc(oval3, 168, 24);
             }
             if (keyboard.ShowRight)
             {
-                rCenter = new SKPoint(keyboard.Right[1].BoundingBox.MidX, keyboard.Right[1].BoundingBox.Top + keyboard.Right[1].BoundingBox.Width / 2);
-                var oval2 = new SKRect(rCenter.X - radius2, rCenter.Y - radius2, rCenter.X + radius2, rCenter.Y + radius2);
+                rCenter = new SKPoint(
+                    keyboard.Right[1].BoundingBox.MidX,
+                    keyboard.Right[1].BoundingBox.Top + keyboard.Right[1].BoundingBox.Width / 2
+                );
+                var oval2 = new SKRect(
+                    rCenter.X - radius2,
+                    rCenter.Y - radius2,
+                    rCenter.X + radius2,
+                    rCenter.Y + radius2
+                );
                 path1.AddArc(oval2, 40, 100);
                 path1.AddArc(oval2, -40, -100);
-                var oval4 = new SKRect(rCenter.X - radius3, rCenter.Y - radius3, rCenter.X + radius3, rCenter.Y + radius3);
+                var oval4 = new SKRect(
+                    rCenter.X - radius3,
+                    rCenter.Y - radius3,
+                    rCenter.X + radius3,
+                    rCenter.Y + radius3
+                );
                 path2.AddArc(oval4, -12, 24);
             }
             base.Update();
@@ -61,24 +93,24 @@ namespace Mageki.Drawables
         private SKPaint paint0 = new SKPaint()
         {
             Style = SKPaintStyle.Stroke,
-            Color = new SKColor(0xFFAAAAAA)
+            Color = new SKColor(0xFFAAAAAA),
         };
         private SKPaint paint1 = new SKPaint()
         {
             Style = SKPaintStyle.Stroke,
-            Color = new SKColor(0xFFAAAAAA)
+            Color = new SKColor(0xFFAAAAAA),
         };
         private SKPaint paint2 = new SKPaint()
         {
             Style = SKPaintStyle.Stroke,
             StrokeCap = SKStrokeCap.Round,
-            Color = new SKColor(0xFF888888)
+            Color = new SKColor(0xFF888888),
         };
         private SKPaint paint3 = new SKPaint()
         {
             Style = SKPaintStyle.Stroke,
             StrokeCap = SKStrokeCap.Square,
-            Color = new SKColor(0xFF888888)
+            Color = new SKColor(0xFF888888),
         };
         private SKPath path1 = new SKPath();
         private SKPath path2 = new SKPath();
@@ -91,7 +123,12 @@ namespace Mageki.Drawables
 
         public override void Draw(SKCanvas canvas)
         {
-            if (!Visible || !keyboard.Visible) return;
+            if (!Visible || !keyboard.Visible)
+                return;
+            paint0.Color = CanvasPalette.Soft;
+            paint1.Color = CanvasPalette.Soft;
+            paint2.Color = CanvasPalette.Medium;
+            paint3.Color = CanvasPalette.Medium;
             base.Draw(canvas);
             if (keyboard.ShowLeft)
             {

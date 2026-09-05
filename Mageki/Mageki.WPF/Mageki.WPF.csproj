@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Mageki.WPF</RootNamespace>
+    <AssemblyName>Mageki.WPF</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>10.0</LangVersion>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Shared library (netstandard2.0 target) -->
+    <ProjectReference Include="..\Mageki\Mageki.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="NLog" Version="5.1.1" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <Target Name="DisableXamarinFormsXamlForWpf" AfterTargets="_FindXamlGFiles">
+    <ItemGroup>
+      <_XamlGInputs Remove="@(_XamlGInputs)" />
+      <_XamlGOutputs Remove="@(_XamlGOutputs)" />
+    </ItemGroup>
+  </Target>
+</Project>

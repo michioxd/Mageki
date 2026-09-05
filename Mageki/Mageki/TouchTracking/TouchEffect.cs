@@ -6,9 +6,8 @@ namespace Mageki.TouchTracking
     {
         public event TouchActionEventHandler TouchAction;
 
-        public TouchEffect() : base("Mageki.TouchEffect")
-        {
-        }
+        public TouchEffect()
+            : base("Mageki.TouchEffect") { }
 
         public bool Capture { set; get; }
 

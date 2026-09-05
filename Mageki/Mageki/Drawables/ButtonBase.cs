@@ -1,24 +1,23 @@
-﻿using SkiaSharp;
-
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
+using SkiaSharp;
 using Xamarin.Essentials;
 
 namespace Mageki.Drawables
 {
     public abstract class ButtonBase : Box
     {
-        public static Dictionary<ButtonColors, SKColor> Colors { get; } = new Dictionary<ButtonColors, SKColor>()
-        {
-            { ButtonColors.Red, new SKColor(0xFFFF455B) },
-            { ButtonColors.Green, new SKColor(0xFF45FF75) },
-            { ButtonColors.Blue, new SKColor(0xFF4589FF) },
-            { ButtonColors.Yellow, new SKColor(0xFFFFD545) },
-            { ButtonColors.Cyan, new SKColor(0xFF45F8FF) },
-            { ButtonColors.Purple, new SKColor(0xFF8B45FF) },
-            { ButtonColors.Blank, new SKColor(0xFFDDDDDD) },
-            { ButtonColors.White, new SKColor(0xFFFFFFFF) },
-        };
+        public static Dictionary<ButtonColors, SKColor> Colors { get; } =
+            new Dictionary<ButtonColors, SKColor>()
+            {
+                { ButtonColors.Red, new SKColor(0xFFFF455B) },
+                { ButtonColors.Green, new SKColor(0xFF45FF75) },
+                { ButtonColors.Blue, new SKColor(0xFF4589FF) },
+                { ButtonColors.Yellow, new SKColor(0xFFFFD545) },
+                { ButtonColors.Cyan, new SKColor(0xFF45F8FF) },
+                { ButtonColors.Purple, new SKColor(0xFF8B45FF) },
+                { ButtonColors.Blank, new SKColor(0xFFDDDDDD) },
+                { ButtonColors.White, new SKColor(0xFFFFFFFF) },
+            };
 
         public byte TouchCount
         {
@@ -33,7 +32,8 @@ namespace Mageki.Drawables
             }
         }
 
-        public ButtonBase() : base() { }
+        public ButtonBase()
+            : base() { }
 
         public override bool HandleTouchPressed(long id, SKPoint point)
         {

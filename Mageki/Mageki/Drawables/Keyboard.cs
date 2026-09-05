@@ -1,6 +1,4 @@
-﻿using SkiaSharp;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,24 +6,37 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-
+using SkiaSharp;
 using Xamarin.Forms;
 
 namespace Mageki.Drawables
 {
     public class Keyboard : Container
     {
-        public float Spacing { get => GetValue(default(float)); set => SetValueWithNotify(value); }
+        public float Spacing
+        {
+            get => GetValue(default(float));
+            set => SetValueWithNotify(value);
+        }
         public HalfKeyBoard Left => Children[0] as HalfKeyBoard;
         public HalfKeyBoard Right => Children[1] as HalfKeyBoard;
-        public bool ShowLeft { get => GetValue(true); set => SetValueWithNotify(value); }
-        public bool ShowRight { get => GetValue(true); set => SetValueWithNotify(value); }
+        public bool ShowLeft
+        {
+            get => GetValue(true);
+            set => SetValueWithNotify(value);
+        }
+        public bool ShowRight
+        {
+            get => GetValue(true);
+            set => SetValueWithNotify(value);
+        }
         public bool AntiMisTouch
         {
             get => GetValue(false);
             set
             {
-                if (value && !AntiMisTouch) buttonBasePoints = new float[2][];
+                if (value && !AntiMisTouch)
+                    buttonBasePoints = new float[2][];
                 SetValueWithNotify(value);
             }
         }
@@ -34,17 +45,18 @@ namespace Mageki.Drawables
         {
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 4,
-            Color = new SKColor(0xFF000000)
+            Color = new SKColor(0xFF000000),
         };
 
         private SKPaint basePointStrokePaint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 8,
-            Color = new SKColor(0xFFFFFFFF)
+            Color = new SKColor(0xFFFFFFFF),
         };
 
-        public Keyboard() : base()
+        public Keyboard()
+            : base()
         {
             Children = new List<IDrawable>() { new HalfKeyBoard(), new HalfKeyBoard() };
             this[0].Color = ButtonColors.Red;
@@ -54,11 +66,13 @@ namespace Mageki.Drawables
             this[4].Color = ButtonColors.Green;
             this[5].Color = ButtonColors.Blue;
         }
+
         public SquareButton this[int index]
         {
             get
             {
-                if (index > 5 || index < 0) throw new IndexOutOfRangeException();
+                if (index > 5 || index < 0)
+                    throw new IndexOutOfRangeException();
 
                 if (index / 3 == 0)
                 {
@@ -70,11 +84,15 @@ namespace Mageki.Drawables
                 }
             }
         }
+
         public override void Update()
         {
             var position = new SKPoint(Position.X + Padding.X, Position.Y + Padding.Y);
             var n = BitConverter.GetBytes(ShowLeft)[0] + BitConverter.GetBytes(ShowRight)[0];
-            var size = new SKSize((Size.Width - Padding.X * 2 - Spacing * (n / 2)) / n, Size.Height - Padding.Y * n);
+            var size = new SKSize(
+                (Size.Width - Padding.X * 2 - Spacing * (n / 2)) / n,
+                Size.Height - Padding.Y * n
+            );
             Left.Visible = ShowLeft;
             Right.Visible = ShowRight;
             if (ShowLeft)
@@ -93,18 +111,24 @@ namespace Mageki.Drawables
 
         public override void Draw(SKCanvas canvas)
         {
+            basePointPaint.Color = CanvasPalette.KeyboardPoint;
+            basePointStrokePaint.Color = CanvasPalette.KeyboardPointStroke;
             base.Draw(canvas);
             if (AntiMisTouch)
             {
                 if (ShowLeft && buttonBasePoints[0] != null)
                 {
-                    var leftBasePoints = buttonBasePoints[0].Select(x => new SKPoint(x, Left[0].BoundingBox.MidY)).ToArray();
+                    var leftBasePoints = buttonBasePoints[0]
+                        .Select(x => new SKPoint(x, Left[0].BoundingBox.MidY))
+                        .ToArray();
                     canvas.DrawPoints(SKPointMode.Points, leftBasePoints, basePointStrokePaint);
                     canvas.DrawPoints(SKPointMode.Points, leftBasePoints, basePointPaint);
                 }
                 if (ShowRight && buttonBasePoints[1] != null)
                 {
-                    var rightBasePoints = buttonBasePoints[1].Select(x => new SKPoint(x, Right[0].BoundingBox.MidY)).ToArray();
+                    var rightBasePoints = buttonBasePoints[1]
+                        .Select(x => new SKPoint(x, Right[0].BoundingBox.MidY))
+                        .ToArray();
                     canvas.DrawPoints(SKPointMode.Points, rightBasePoints, basePointStrokePaint);
                     canvas.DrawPoints(SKPointMode.Points, rightBasePoints, basePointPaint);
                 }
@@ -151,8 +175,7 @@ namespace Mageki.Drawables
 
         private void SetButtonsWithAntiMisTouch()
         {
-            var points = touchPoints
-                .Select(p => p.Value);
+            var points = touchPoints.Select(p => p.Value);
             var leftPoints = points.Where(p => GetKeyIndexFromX(p.X) < 3).ToArray();
             var rightPoints = points.Except(leftPoints).ToArray();
             if (ShowLeft)
@@ -173,7 +196,9 @@ namespace Mageki.Drawables
                 Right[0].TouchCount = Right[1].TouchCount = Right[2].TouchCount = 0;
             }
         }
+
         float[][] buttonBasePoints = new float[2][];
+
         private void SetHalfKeyboardWithAntiMisTouch(SKPoint[] points, Side side)
         {
             points = points.OrderBy(p => p.X).ToArray();
@@ -185,12 +210,14 @@ namespace Mageki.Drawables
                 {
                     half[0].BoundingBox.MidX,
                     half[1].BoundingBox.MidX,
-                    half[2].BoundingBox.MidX
+                    half[2].BoundingBox.MidX,
                 };
             }
             float[] xSeparations = new float[2];
-            xSeparations[0] = buttonBasePoints[(int)side][0] / 2 + buttonBasePoints[(int)side][1] / 2;
-            xSeparations[1] = buttonBasePoints[(int)side][1] / 2 + buttonBasePoints[(int)side][2] / 2;
+            xSeparations[0] =
+                buttonBasePoints[(int)side][0] / 2 + buttonBasePoints[(int)side][1] / 2;
+            xSeparations[1] =
+                buttonBasePoints[(int)side][1] / 2 + buttonBasePoints[(int)side][2] / 2;
             if (points.Length == 0)
             {
                 half[0].TouchCount = 0;
@@ -217,7 +244,7 @@ namespace Mageki.Drawables
             }
             else if (points.Length == 2)
             {
-                if (MathF.Abs(points[0].X - points[1].X) < buttonWidth * 1.5f)
+                if ((float)Math.Abs(points[0].X - points[1].X) < buttonWidth * 1.5f)
                 {
                     if ((points[0].X + points[1].X) / 2 < buttonBasePoints[(int)side][1])
                     {
@@ -248,7 +275,7 @@ namespace Mageki.Drawables
             {
                 if (side == Side.Left)
                 {
-                    buttonBasePoints[(int)side][1] = points[^2].X;
+                    buttonBasePoints[(int)side][1] = points[points.Length - 2].X;
                 }
                 if (side == Side.Right)
                 {
@@ -296,6 +323,7 @@ namespace Mageki.Drawables
                 base.HandleTouchReleased(id);
             }
         }
+
         private List<float> GetXSeparations()
         {
             List<float> xSeparations = new List<float>();
@@ -315,6 +343,7 @@ namespace Mageki.Drawables
             }
             return xSeparations;
         }
+
         public int GetKeyIndexFromX(float x)
         {
             List<float> xSeparations = GetXSeparations();
@@ -327,8 +356,10 @@ namespace Mageki.Drawables
                     break;
                 }
             }
-            if (result == -1) result = xSeparations.Count;
-            if (!ShowLeft) result += 3;
+            if (result == -1)
+                result = xSeparations.Count;
+            if (!ShowLeft)
+                result += 3;
             return result;
         }
     }

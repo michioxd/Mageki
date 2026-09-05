@@ -1,0 +1,68 @@
+<ui:FluentWindow
+    x:Class="Mageki.WPF.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
+    xmlns:local="clr-namespace:Mageki.WPF"
+    Title="Mageki"
+    Height="600"
+    Width="1000"
+    MinHeight="300"
+    MinWidth="400"
+    WindowStartupLocation="CenterScreen"
+    ExtendsContentIntoTitleBar="True"
+    PreviewKeyDown="Window_PreviewKeyDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="TitleBarRow"
+                           Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            Grid.Row="0"
+            x:Name="TitleBar"
+            Title="Mageki.WPF"
+            ShowMinimize="True"
+            ShowMaximize="True"
+            ShowClose="True"
+            ShowHelp="False"
+            ForceShutdown="True">
+            <ui:TitleBar.CenterContent>
+                <TextBlock
+                    x:Name="StatusText"
+                    Text="Disconnected"
+                    VerticalAlignment="Center"
+                    Margin="8,0"
+                    Opacity="0.85"/>
+            </ui:TitleBar.CenterContent>
+            <ui:TitleBar.TrailingContent>
+                <StackPanel Orientation="Horizontal">
+                    <ui:Button
+                        x:Name="SettingsButton"
+                        Content="Settings"
+                        FontSize="11"
+                        Padding="8,2"
+                        MinHeight="26"
+                        Click="SettingsButton_Click"
+                        ToolTip="Settings"/>
+                    <ui:Button
+                        x:Name="FullScreenButton"
+                        Content="Full screen"
+                        FontSize="11"
+                        Padding="8,2"
+                        MinHeight="26"
+                        Click="FullScreenButton_Click"
+                        ToolTip="Toggle full screen (F11)"/>
+                </StackPanel>
+            </ui:TitleBar.TrailingContent>
+        </ui:TitleBar>
+
+        <skia:SKElement
+            Grid.Row="1"
+            x:Name="SkiaCanvas"
+            PaintSurface="SkiaCanvas_PaintSurface"
+            Focusable="True"/>
+    </Grid>
+</ui:FluentWindow>

@@ -1,9 +1,6 @@
-﻿using Mageki.Utils;
-
+﻿using System;
+using Mageki.Utils;
 using Rg.Plugins.Popup.Extensions;
-
-using System;
-
 using Xamarin.Forms;
 
 namespace Mageki
@@ -15,6 +12,5 @@ namespace Mageki
             InitializeComponent();
             _ = Update.CheckUpdateAsync();
         }
-
     }
 }

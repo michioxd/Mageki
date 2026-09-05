@@ -1,19 +1,17 @@
-﻿using Mageki.Drawables;
-using Mageki.Resources;
-
-using Rg.Plugins.Popup.Services;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
-
+using Mageki.Drawables;
+using Mageki.Resources;
+using Rg.Plugins.Popup.Services;
 using Xamarin.CommunityToolkit.Effects;
 using Xamarin.CommunityToolkit.Extensions;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using Preferences = Mageki.PreferenceStore;
 
 namespace Mageki
 {
@@ -285,19 +283,39 @@ namespace Mageki
     public enum Protocol
     {
         UDP = 0,
-        TCP = 1
+        TCP = 1,
     }
 
     public enum LeverMoveMode
     {
         Relative,
-        Absolute
+        Absolute,
+    }
+
+    public enum CanvasTheme
+    {
+        Auto,
+        Light,
+        Dark,
     }
 
     public static class Settings
     {
         public const double MaxLeverLinearity = 540;
         public const double MinLeverLinearity = 54;
+
+        public static CanvasTheme CanvasTheme
+        {
+            get => (CanvasTheme)Preferences.Get("canvasTheme", (int)CanvasTheme.Auto);
+            set
+            {
+                if (value != CanvasTheme)
+                {
+                    Preferences.Set("canvasTheme", (int)value);
+                    OnValueChanged();
+                }
+            }
+        }
 
         public static Protocol Protocol
         {
@@ -327,10 +345,7 @@ namespace Mageki
 
         public static string IP
         {
-            get
-            {
-                return Preferences.Get("ip", string.Empty);
-            }
+            get { return Preferences.Get("ip", "127.0.0.1"); }
             set
             {
                 if (value != IP)
@@ -342,7 +357,8 @@ namespace Mageki
             }
         }
 
-        public static IPAddress IPAddress => IPAddress.TryParse(IP, out var ip) ? ip : IPAddress.Broadcast;
+        public static IPAddress IPAddress =>
+            IPAddress.TryParse(IP, out var ip) ? ip : IPAddress.Broadcast;
 
         public static bool HideGameButtons
         {
@@ -365,7 +381,8 @@ namespace Mageki
                 if (value != HideWallActionDevices)
                 {
                     Preferences.Set("hideWallActionDevices", value);
-                    if (value) EnableCompositeMode = false;
+                    if (value)
+                        EnableCompositeMode = false;
                     OnValueChanged();
                 }
             }
@@ -402,8 +419,10 @@ namespace Mageki
             get => (LeverMoveMode)Preferences.Get("leverMoveMode", (int)LeverMoveMode.Relative);
             set
             {
-                if (value == LeverMoveMode) return;
-                if (value == LeverMoveMode.Absolute) EnableCompositeMode = false;
+                if (value == LeverMoveMode)
+                    return;
+                if (value == LeverMoveMode.Absolute)
+                    EnableCompositeMode = false;
                 Preferences.Set("leverMoveMode", (int)value);
                 OnValueChanged();
             }
@@ -414,7 +433,8 @@ namespace Mageki
             get => Preferences.Get("enableCompositeMode", false);
             set
             {
-                if (value == EnableCompositeMode) return;
+                if (value == EnableCompositeMode)
+                    return;
                 Preferences.Set("enableCompositeMode", value);
                 OnValueChanged();
             }
@@ -425,7 +445,8 @@ namespace Mageki
             get => Preferences.Get("enableLeverOverflowHandling", false);
             set
             {
-                if (value == EnableLeverOverflowHandling) return;
+                if (value == EnableLeverOverflowHandling)
+                    return;
                 Preferences.Set("enableLeverOverflowHandling", value);
                 OnValueChanged();
             }
@@ -451,8 +472,10 @@ namespace Mageki
             {
                 if (value != LeverLinearity)
                 {
-                    if (value < MinLeverLinearity) value = (int)MinLeverLinearity;
-                    else if (value > MaxLeverLinearity) value = (int)MaxLeverLinearity;
+                    if (value < MinLeverLinearity)
+                        value = (int)MinLeverLinearity;
+                    else if (value > MaxLeverLinearity)
+                        value = (int)MaxLeverLinearity;
                     Preferences.Set("leverLinearity", value);
                     OnValueChanged();
                 }

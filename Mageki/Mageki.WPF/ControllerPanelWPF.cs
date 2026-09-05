@@ -1,85 +1,79 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-using System.Timers;
-using Mageki.DependencyServices;
+using System.Windows;
 using Mageki.Drawables;
-using Mageki.Resources;
 using Mageki.TouchTracking;
-using Mageki.Utils;
 using SkiaSharp;
-using SkiaSharp.Views.Forms;
-using Xamarin.Essentials;
-using Xamarin.Forms;
-using DeviceInfo = Xamarin.Essentials.DeviceInfo;
-using Keyboard = Mageki.Drawables.Keyboard;
-using SquareButton = Mageki.Drawables.SquareButton;
+using SkiaSharp.Views.WPF;
+using Wpf.Ui.Appearance;
 
-namespace Mageki
+namespace Mageki.WPF
 {
-    public class ControllerPanel : Grid
+    public class ControllerPanelWPF
     {
-        private bool requireUpdate = false;
-        private Keyboard keyboard = new Keyboard();
-        private SideButton lSide = new SideButton() { Side = Side.Left, Color = SKColors.Pink };
-        private SideButton rSide = new SideButton() { Side = Side.Right, Color = SKColors.Purple };
+        #region Fields (copied from Xamarin ControllerPanel)
 
-        private SquareButton lMenu = new SquareButton()
+        private bool requireUpdate = false;
+        private readonly Keyboard keyboard = new Keyboard();
+        private readonly SideButton lSide = new SideButton()
+        {
+            Side = Side.Left,
+            Color = SKColors.Pink,
+        };
+        private readonly SideButton rSide = new SideButton()
+        {
+            Side = Side.Right,
+            Color = SKColors.Purple,
+        };
+
+        private readonly SquareButton lMenu = new SquareButton()
         {
             Color = ButtonColors.Red,
             BorderColor = new SKColor(0xFF880000),
         };
-
-        private SquareButton rMenu = new SquareButton()
+        private readonly SquareButton rMenu = new SquareButton()
         {
             Color = ButtonColors.Yellow,
             BorderColor = new SKColor(0xFF888800),
         };
 
-        private Lever lever = new Lever();
-        private MenuFrame lMenuFrame;
-        private MenuFrame rMenuFrame;
-        private Circles circles;
-        private SettingButton settingButton;
-        private IList<TouchableObject> touchableObject;
-        int oldWidth = -1;
-        int oldHeight = -1;
+        private readonly Lever lever = new Lever();
+        private readonly MenuFrame lMenuFrame;
+        private readonly MenuFrame rMenuFrame;
+        private readonly Circles circles;
+        private readonly IList<TouchableObject> touchableObjects;
 
-        #region 常量
+        private int oldWidth = -1;
+        private int oldHeight = -1;
+        private bool inRhythmGame;
+
+        private readonly SKElement _canvas;
+
+        #endregion
+
+        #region Constants (copied from Xamarin ControllerPanel)
 
         const float PanelPaddingRatio = 0.5f;
         const float LRSpacingCoef = 0.5f;
         const float KeyboardMarginTopCoef = 0.5f;
         const float ButtonSpacingCoef = 0.25f;
         const float MenuSizeCoef = 0.5f;
-        const float SettingSizeCoef = 0.4f;
         const float MenuPaddingCoef = 1.125f;
         const float LeverWidth = 0.5f;
 
         #endregion
 
-        /// <summary>
-        /// 绘图面板
-        /// </summary>
-        SKCanvasView canvasView = new SKCanvasView();
-
-        /// <summary>
-        /// 捕获点击
-        /// </summary>
-        TouchEffect touchEffect = new TouchEffect { Capture = true };
-
-        bool inRhythmGame;
-
-        public ControllerPanel()
+        public ControllerPanelWPF(SKElement canvas)
         {
-            settingButton = new SettingButton();
+            _canvas = canvas;
+            ApplyCanvasTheme();
+
             circles = new Circles(keyboard);
-            touchableObject = new List<TouchableObject>()
+            lMenuFrame = new MenuFrame(lMenu, Side.Left);
+            rMenuFrame = new MenuFrame(rMenu, Side.Right);
+
+            touchableObjects = new List<TouchableObject>
             {
-                settingButton,
                 keyboard,
                 lMenu,
                 rMenu,
@@ -88,24 +82,43 @@ namespace Mageki
                 rSide,
             };
 
-            lMenuFrame = new MenuFrame(lMenu, Side.Left);
-            rMenuFrame = new MenuFrame(rMenu, Side.Right);
-            //添加绘图面板
-            Children.Add(canvasView);
-            //注册绘图方法
-            canvasView.PaintSurface += CanvasView_PaintSurface;
-            //捕获点击
-            touchEffect.TouchAction += TouchEffect_TouchAction;
-            Effects.Add(touchEffect);
-
             Settings.ValueChanged += Settings_ValueChanged;
-            StaticIO.OnLedChanged += (sender, e) => SetLed(StaticIO.Colors);
+            StaticIO.OnLedChanged += StaticIO_OnLedChanged;
+            StaticIO.OnStatusChanged += StaticIO_OnStatusChanged;
+
             SetLed(StaticIO.Colors);
-            ;
+        }
+
+        private void StaticIO_OnLedChanged(object sender, EventArgs e)
+        {
+            var colors = (ButtonColors[])StaticIO.Colors.Clone();
+            RunOnUiThread(() => SetLed(colors));
+        }
+
+        private void StaticIO_OnStatusChanged(object sender, OnStatusChangedEventArgs e)
+        {
+            RunOnUiThread(_canvas.InvalidateVisual);
+        }
+
+        private void RunOnUiThread(Action action)
+        {
+            if (_canvas.Dispatcher.HasShutdownStarted || _canvas.Dispatcher.HasShutdownFinished)
+                return;
+
+            if (_canvas.Dispatcher.CheckAccess())
+                action();
+            else
+                _canvas.Dispatcher.BeginInvoke(action);
         }
 
         private void Settings_ValueChanged(string name)
         {
+            if (name == nameof(Settings.CanvasTheme))
+            {
+                ApplyCanvasTheme();
+                _canvas.InvalidateVisual();
+                return;
+            }
             if (
                 name == nameof(Settings.ButtonBottomMargin)
                 || name == nameof(Settings.HideGameButtons)
@@ -114,66 +127,47 @@ namespace Mageki
                 || name == nameof(Settings.LeverMoveMode)
             )
             {
-                ForceUpdate();
+                requireUpdate = true;
+                _canvas.InvalidateVisual();
             }
         }
 
-        public void ForceUpdate()
+        public void Draw(SKCanvas canvas, int width, int height)
         {
-            requireUpdate = true;
-            MainThread.InvokeOnMainThreadAsync(canvasView.InvalidateSurface);
-        }
+            ApplyCanvasTheme();
+            canvas.Clear(CanvasPalette.Background);
 
-        /// <summary>
-        /// 绘图
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CanvasView_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
-        {
-            //获取绘图面板的信息
-            SKImageInfo info = e.Info;
-            SKSurface surface = e.Surface;
-            SKCanvas canvas = surface.Canvas;
-            //清空画布
-            canvas.Clear(SKColors.White);
-            if (oldWidth != info.Width || oldHeight != info.Height || requireUpdate)
+            if (oldWidth != width || oldHeight != height || requireUpdate)
             {
                 requireUpdate = false;
-                Update(info.Width, info.Height);
+                UpdateLayout(width, height);
             }
 
             circles.Draw(canvas);
-
             lMenuFrame.Draw(canvas);
             rMenuFrame.Draw(canvas);
-
             lSide.Draw(canvas);
             rSide.Draw(canvas);
-
             lMenu.Draw(canvas);
             rMenu.Draw(canvas);
-
             lever.Draw(canvas);
-
             keyboard.Draw(canvas);
 
-            settingButton.Draw(canvas);
-
-            oldWidth = info.Width;
-            oldHeight = info.Height;
+            oldWidth = width;
+            oldHeight = height;
         }
 
-        /// <summary>
-        /// 计算各个元素的位置和大小
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        private void Update(int width, int height)
+        private static void ApplyCanvasTheme()
+        {
+            CanvasPalette.Apply(Settings.CanvasTheme, ApplicationThemeManager.IsMatchedDark());
+        }
+
+        private void UpdateLayout(int width, int height)
         {
             var nSide =
                 BitConverter.GetBytes(keyboard.ShowLeft)[0]
                 + BitConverter.GetBytes(keyboard.ShowRight)[0];
+
             float baseCoef =
                 1
                 / (
@@ -182,14 +176,12 @@ namespace Mageki
                     + ButtonSpacingCoef * nSide * 2
                     + nSide * 3
                 );
-            // 以一个按钮的边长作为基数计算其他部分尺寸
-            float baseLength = (width * baseCoef);
-            float buttonSideLength = baseLength;
 
+            float baseLength = width * baseCoef;
+            float buttonSideLength = baseLength;
             float menuSideLength = baseLength * MenuSizeCoef;
             float menuPadding = baseLength * MenuPaddingCoef;
             float keyboardMarginTop = baseLength * KeyboardMarginTopCoef;
-
             float bottomMargin = (height - baseLength) * Settings.ButtonBottomMargin;
 
             if (Settings.HideGameButtons)
@@ -215,7 +207,6 @@ namespace Mageki
 
             lSide.ButtonHeight = rSide.ButtonHeight = baseLength;
             lSide.Size = rSide.Size = new SKSize(width / 2f, height - keyboard.BoundingBox.Height);
-            lSide.ButtonHeight = rSide.ButtonHeight = baseLength;
             lSide.Position = new SKPoint(0, 0);
             rSide.Position = new SKPoint(width / 2f, 0);
             lSide.Padding = rSide.Padding = new SKPoint(0, keyboardMarginTop);
@@ -236,74 +227,44 @@ namespace Mageki
                 lever.Position = new SKPoint(width * (1 - LeverWidth) / 2, 0);
                 lever.Padding = new SKPoint(0, keyboard.BoundingBox.Top - lMenu.BoundingBox.Bottom);
             }
-
-            float settingSideLength = baseLength * SettingSizeCoef;
-            settingButton.Size = new SKSize(settingSideLength, settingSideLength);
-            settingButton.Position = new SKPoint(
-                settingSideLength * 0.5f,
-                settingSideLength * 0.5f
-            );
-            //settingButton.Padding = new SKPoint(settingSideLength * 0.1f, settingSideLength * 0.1f);
         }
 
-        /// <summary>
-        /// 处理画布点击
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void TouchEffect_TouchAction(object sender, TouchActionEventArgs args)
+        public void OnTouchAction(long id, TouchActionType type, SKPoint pixelLocation)
         {
-            //点击位置转化为画布的坐标
-            SKPoint pixelLocation = new SKPoint(
-                (float)(canvasView.CanvasSize.Width * args.Location.X / Width),
-                (float)(canvasView.CanvasSize.Height * args.Location.Y / Height)
-            );
-            switch (args.Type)
+            switch (type)
             {
                 case TouchActionType.Pressed:
-                    foreach (TouchableObject obj in touchableObject)
+                    foreach (var obj in touchableObjects)
                     {
                         if (
                             obj.Visible
                             && obj.HitTest(pixelLocation)
-                            && obj.HandleTouchPressed(args.Id, pixelLocation)
+                            && obj.HandleTouchPressed(id, pixelLocation)
                         )
-                        {
                             break;
-                        }
                     }
-
                     break;
+
                 case TouchActionType.Moved:
-                    foreach (TouchableObject obj in touchableObject)
+                    foreach (var obj in touchableObjects)
                     {
-                        if (obj.HandleTouchMoved(args.Id, pixelLocation))
-                        {
+                        if (obj.HandleTouchMoved(id, pixelLocation))
                             break;
-                        }
                     }
-
                     break;
+
                 case TouchActionType.Released:
-                    foreach (TouchableObject obj in touchableObject)
-                    {
-                        obj.HandleTouchReleased(args.Id);
-                    }
-
+                    foreach (var obj in touchableObjects)
+                        obj.HandleTouchReleased(id);
                     break;
-                case TouchActionType.Cancelled:
-                    foreach (TouchableObject obj in touchableObject)
-                    {
-                        obj.HandleTouchCancelled(args.Id);
-                    }
 
+                case TouchActionType.Cancelled:
+                    foreach (var obj in touchableObjects)
+                        obj.HandleTouchCancelled(id);
                     break;
             }
 
-            //更新IO状态
             UpdateIO();
-            //通知重绘画布
-            canvasView.InvalidateSurface();
         }
 
         private void UpdateIO()
@@ -321,16 +282,13 @@ namespace Mageki
                 rSide,
                 rMenu,
             };
-            // buttons
+
             for (int i = 0; i < buttons.Length; i++)
             {
                 if (StaticIO.Data.GameButtons[i] != buttons[i].TouchCount)
-                {
                     StaticIO.SetGameButton(i, buttons[i].TouchCount);
-                }
             }
 
-            // lever
             MoveLever(lever.Value);
         }
 
@@ -338,22 +296,16 @@ namespace Mageki
         {
             short newValue = (short)(short.MaxValue * x);
             short oldValue = StaticIO.Data.Lever;
-
             var threshold = short.MaxValue / (Settings.LeverLinearity / 2f);
 
-            // 仅在经过分界的时候发包
             if ((int)(newValue / threshold) != (int)(oldValue / threshold))
-            {
                 StaticIO.SetLever(newValue);
-            }
         }
 
         public void SetLed(ButtonColors[] colors)
         {
             for (int i = 0; i < colors.Length; i++)
-            {
                 keyboard[i].Color = colors[i];
-            }
 
             bool temp =
                 keyboard.Left[0].Color == keyboard.Right[0].Color
@@ -364,9 +316,10 @@ namespace Mageki
                 && keyboard.Left[2].Color == ButtonColors.Blue;
 
             inRhythmGame = temp;
-            lMenu.Visible = rMenu.Visible = settingButton.Visible = !inRhythmGame;
+            lMenu.Visible = rMenu.Visible = !inRhythmGame;
             keyboard.AntiMisTouch = Settings.AntiMisTouch && inRhythmGame;
-            MainThread.InvokeOnMainThreadAsync(canvasView.InvalidateSurface);
+
+            _canvas.InvalidateVisual();
         }
     }
 }

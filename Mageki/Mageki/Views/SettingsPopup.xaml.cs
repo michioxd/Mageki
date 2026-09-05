@@ -1,15 +1,12 @@
-﻿using Mageki.DependencyServices;
-
-using Rg.Plugins.Popup.Pages;
-using Rg.Plugins.Popup.Services;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Mageki.DependencyServices;
+using Rg.Plugins.Popup.Pages;
+using Rg.Plugins.Popup.Services;
 using Xamarin.CommunityToolkit.Extensions;
 using Xamarin.Essentials;
 using Xamarin.Forms;

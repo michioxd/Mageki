@@ -6,6 +6,6 @@ namespace Mageki.DependencyServices
 {
     public interface ICloseApplication
     {
-        public void Close();
+        void Close();
     }
 }

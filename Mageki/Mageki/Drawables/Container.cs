@@ -1,14 +1,18 @@
-﻿using SkiaSharp;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SkiaSharp;
 
 namespace Mageki.Drawables
 {
     public abstract class Container : Box
     {
-        public IList<IDrawable> Children { get => GetValue(default(IList<IDrawable>)); set => SetValueWithNotify(value); }
+        public IList<IDrawable> Children
+        {
+            get => GetValue(default(IList<IDrawable>));
+            set => SetValueWithNotify(value);
+        }
 
-        public Container() : base() { }
+        public Container()
+            : base() { }
 
         public override void Update()
         {
@@ -21,7 +25,8 @@ namespace Mageki.Drawables
 
         public override void Draw(SKCanvas canvas)
         {
-            if (!Visible) return;
+            if (!Visible)
+                return;
             base.Draw(canvas);
             foreach (var child in Children)
             {

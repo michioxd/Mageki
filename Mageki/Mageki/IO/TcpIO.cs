@@ -8,14 +8,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-
 using Timer = System.Timers.Timer;
 
 namespace Mageki
 {
     public class TcpIO : IO
     {
-        private bool isConnected;
         private byte helloRandomValue;
         private Timer heartbeatTimer = new Timer(400) { AutoReset = true };
         private Timer disconnectTimer = new Timer(1500) { AutoReset = false };
@@ -28,20 +26,21 @@ namespace Mageki
         private bool disposedValue;
         public int Port { get; private set; }
 
-        public TcpIO() : this(Settings.Port)
-        {
+        public TcpIO()
+            : this(Settings.Port) { }
 
-        }
         public TcpIO(int port)
         {
             Port = port;
         }
+
         public override void Init()
         {
             try
             {
                 helloRandomValue = (byte)(new Random().Next() % 255);
-                if (disposedValue) throw new ObjectDisposedException(GetType().Name);
+                if (disposedValue)
+                    throw new ObjectDisposedException(GetType().Name);
 
                 heartbeatTimer.Elapsed += HeartbeatTimer_Elapsed;
                 heartbeatTimer.Start();
@@ -52,6 +51,7 @@ namespace Mageki
                 listener.Start();
 
                 readingThread = new Thread(PollThread);
+                readingThread.IsBackground = true;
                 Status = Status.Disconnected;
                 readingThread.Start();
             }
@@ -60,16 +60,20 @@ namespace Mageki
                 App.Logger.Error(e);
                 Status = Status.Error;
             }
-
         }
+
         private void HeartbeatTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             try
             {
                 SendMessage(new byte[] { (byte)MessageType.Hello, helloRandomValue });
             }
-            catch (Exception ex) { Debug.WriteLine(ex); }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
+
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             Disconnect();
@@ -77,7 +81,8 @@ namespace Mageki
 
         public async void Reconnect()
         {
-            if (connecting || disposedValue) return;
+            if (connecting || disposedValue)
+                return;
             connecting = true;
             Disconnect();
             try
@@ -85,6 +90,10 @@ namespace Mageki
                 var newClient = await listener.AcceptTcpClientAsync();
                 networkStream = newClient.GetStream();
                 client = newClient;
+                Status = Status.Connected;
+                RequestValues();
+                disconnectTimer.Stop();
+                disconnectTimer.Start();
             }
             catch (Exception ex)
             {
@@ -93,6 +102,7 @@ namespace Mageki
             }
             connecting = false;
         }
+
         private void Disconnect()
         {
             if (client?.Connected ?? false)
@@ -105,7 +115,6 @@ namespace Mageki
                 tmpStream?.Dispose();
                 Status = Status.Disconnected;
             }
-            isConnected = false;
         }
 
         public override void SetGameButton(int index, byte value)
@@ -113,16 +122,27 @@ namespace Mageki
             base.SetGameButton(index, value);
             SendMessage(new byte[] { (byte)MessageType.ButtonStatus, (byte)index, value });
         }
+
         public override void SetLever(short value)
         {
             base.SetLever(value);
-            SendMessage(new byte[] { (byte)MessageType.MoveLever }.Concat(BitConverter.GetBytes(value)).ToArray());
+            SendMessage(
+                new byte[] { (byte)MessageType.MoveLever }
+                    .Concat(BitConverter.GetBytes(value))
+                    .ToArray()
+            );
         }
+
         public override void SetAime(byte scanning, byte[] packet)
         {
             base.SetAime(scanning, packet);
-            SendMessage(new byte[] { (byte)MessageType.Scan, Convert.ToByte(scanning) }.Concat(Data.AimePacket).ToArray());
+            SendMessage(
+                new byte[] { (byte)MessageType.Scan, Convert.ToByte(scanning) }
+                    .Concat(Data.AimePacket)
+                    .ToArray()
+            );
         }
+
         public override void SetOptionButton(OptionButtons button, bool pressed)
         {
             base.SetOptionButton(button, pressed);
@@ -143,14 +163,15 @@ namespace Mageki
             }
             if (!disposedValue)
             {
-                if (!client?.Connected ?? false)
+                var stream = networkStream;
+                if (!client?.Connected ?? false || stream == null)
                 {
                     Reconnect();
                     return;
                 }
                 try
                 {
-                    networkStream.Write(data, 0, data.Length);
+                    stream.Write(data, 0, data.Length);
                 }
                 catch
                 {
@@ -161,6 +182,7 @@ namespace Mageki
                 }
             }
         }
+
         /// <summary>
         /// 接收数据
         /// </summary>
@@ -170,12 +192,13 @@ namespace Mageki
             {
                 while (!disposedValue)
                 {
-                    if ((!client?.Connected) ?? true)
+                    var stream = networkStream;
+                    if ((!client?.Connected) ?? true || stream == null)
                     {
                         Reconnect();
                         continue;
                     }
-                    int len = networkStream.Read(_inBuffer, 0, 1);
+                    int len = stream.Read(_inBuffer, 0, 1);
                     if (len <= 0)
                     {
                         Reconnect();
@@ -184,35 +207,39 @@ namespace Mageki
                     Receive((MessageType)_inBuffer[0]);
                 }
             }
-            catch(Exception ex)
+            catch (Exception)
             {
                 Disconnect();
             }
         }
+
         private void Receive(MessageType type)
         {
+            var stream = networkStream;
+            if (stream == null)
+                return;
             int i = 0;
-            if (type == MessageType.SetLed && (i = networkStream.Read(_inBuffer, 0, 18)) > 0)
+            if (type == MessageType.SetLed && (i = stream.Read(_inBuffer, 0, 18)) > 0)
             {
                 SetLed(_inBuffer);
             }
-            else if (type == MessageType.SetLever && networkStream.Read(_inBuffer, 0, 2) > 0)
+            else if (type == MessageType.SetLever && stream.Read(_inBuffer, 0, 2) > 0)
             {
                 short lever = BitConverter.ToInt16(_inBuffer, 0);
                 SetLever(lever);
             }
-            else if (type == MessageType.Hello && networkStream.Read(_inBuffer, 0, 1) > 0)
+            else if (type == MessageType.Hello && stream.Read(_inBuffer, 0, 1) > 0)
             {
                 if (Status != Status.Connected)
                 {
-                    isConnected = true;
-                    RequestValues();
                     Status = Status.Connected;
+                    RequestValues();
                 }
                 disconnectTimer.Stop();
                 disconnectTimer.Start();
             }
         }
+
         private void RequestValues()
         {
             SendMessage(new byte[] { (byte)MessageType.RequestValues });

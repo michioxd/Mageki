@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 
+using Mageki.TouchTracking;
+
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;

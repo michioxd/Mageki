@@ -1,18 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-
+﻿using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Mageki.Resources;
+using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
-
-using System;
-using System.Net.Http;
-using System.IO;
-
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Mageki.Resources;
-using System.Threading.Tasks;
 
 namespace Mageki
 {
@@ -35,12 +32,17 @@ namespace Mageki
         /// </summary>
         public static void InitNLog()
         {
-            bool flag = true;
             var config = new LoggingConfiguration();
-            var logFileName = Path.Combine(FileSystem.CacheDirectory, "logs", $"{App.LogFileName}.log");
-            if (File.Exists(logFileName)) flag = false;
+            var logFileName = Path.Combine(
+                FileSystem.CacheDirectory,
+                "logs",
+                $"{App.LogFileName}.log"
+            );
             var logFile = new FileTarget("logFile") { FileName = logFileName };
-            var errorFile = new FileTarget("errorFile") { FileName = Path.Combine(FileSystem.CacheDirectory, "logs", $"errors.log") };
+            var errorFile = new FileTarget("errorFile")
+            {
+                FileName = Path.Combine(FileSystem.CacheDirectory, "logs", $"errors.log"),
+            };
             var logConsole = new ConsoleTarget("logConsole");
 
             config.AddRule(LogLevel.Debug, LogLevel.Off, logFile);
@@ -50,6 +52,7 @@ namespace Mageki
 
             //if (flag) LogDeviceInfo();
         }
+
         /// <summary>
         /// 记录设备信息
         /// </summary>
@@ -64,6 +67,7 @@ namespace Mageki
             Logger.Info($"PlatFormVersion:{DeviceInfo.Version}");
             Logger.Info($"ApplicationVersion:{VersionTracking.CurrentVersion}");
         }
+
         /// <summary>
         /// 捕获全局异常
         /// </summary>
@@ -75,30 +79,39 @@ namespace Mageki
             string logString = e.ToString();
             JObject deviceInfo = new JObject()
             {
-                new JProperty("DeviceType", DeviceInfo.DeviceType.ToString()) ,
-                new JProperty("Idiom", DeviceInfo.Idiom.ToString()) ,
-                new JProperty("Manufacturer",DeviceInfo.Manufacturer.ToString()) ,
-                new JProperty("Model", DeviceInfo.Model.ToString()) ,
-                new JProperty("Name", DeviceInfo.Name.ToString()) ,
-                new JProperty("Platform", DeviceInfo.Platform.ToString()) ,
-                new JProperty("PlatFormVersion", DeviceInfo.Version.ToString()) ,
-                new JProperty("ApplicationVersion", VersionTracking.CurrentVersion.ToString()) ,
+                new JProperty("DeviceType", DeviceInfo.DeviceType.ToString()),
+                new JProperty("Idiom", DeviceInfo.Idiom.ToString()),
+                new JProperty("Manufacturer", DeviceInfo.Manufacturer.ToString()),
+                new JProperty("Model", DeviceInfo.Model.ToString()),
+                new JProperty("Name", DeviceInfo.Name.ToString()),
+                new JProperty("Platform", DeviceInfo.Platform.ToString()),
+                new JProperty("PlatFormVersion", DeviceInfo.Version.ToString()),
+                new JProperty("ApplicationVersion", VersionTracking.CurrentVersion.ToString()),
             };
             JObject json = new JObject()
             {
-                new JProperty("DeviceInfo", deviceInfo) ,
-                new JProperty("Exception", logString) ,
+                new JProperty("DeviceInfo", deviceInfo),
+                new JProperty("Exception", logString),
             };
-            File.WriteAllText(Path.Combine(FileSystem.CacheDirectory, "crash.json"), json.ToString());
+            File.WriteAllText(
+                Path.Combine(FileSystem.CacheDirectory, "crash.json"),
+                json.ToString()
+            );
             return;
         }
 
-        public static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs unobservedTaskExceptionEventArgs)
+        public static void TaskSchedulerOnUnobservedTaskException(
+            object sender,
+            UnobservedTaskExceptionEventArgs unobservedTaskExceptionEventArgs
+        )
         {
             UnhandledException(unobservedTaskExceptionEventArgs.Exception);
         }
 
-        public static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+        public static void CurrentDomainOnUnhandledException(
+            object sender,
+            UnhandledExceptionEventArgs unhandledExceptionEventArgs
+        )
         {
             UnhandledException(unhandledExceptionEventArgs.ExceptionObject as Exception);
         }
@@ -113,7 +126,12 @@ namespace Mageki
                     string text = File.ReadAllText(crashFilePath);
                     string message = JObject.Parse(text)["Exception"].Value<string>();
                     //在这里处理上次造成崩溃的异常
-                    bool copy = await MainPage.DisplayAlert(AppResources.ProgramCrashedUnexpectedly, message, AppResources.Copy, AppResources.Cancel);
+                    bool copy = await MainPage.DisplayAlert(
+                        AppResources.ProgramCrashedUnexpectedly,
+                        message,
+                        AppResources.Copy,
+                        AppResources.Cancel
+                    );
                     if (copy)
                     {
                         await Clipboard.SetTextAsync(text);
@@ -127,12 +145,8 @@ namespace Mageki
             }
         }
 
-        protected override void OnSleep()
-        {
-        }
+        protected override void OnSleep() { }
 
-        protected override void OnResume()
-        {
-        }
+        protected override void OnResume() { }
     }
 }

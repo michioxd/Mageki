@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using Xamarin.CommunityToolkit.Effects;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -15,20 +14,24 @@ namespace Mageki
     public partial class NavigationBar : ContentView
     {
         public static readonly BindableProperty TitleProperty = BindableProperty.Create(
-               propertyName: nameof(Title),
-               returnType: typeof(string),
-               declaringType: typeof(NavigationBar),
-               defaultValue: "");
+            propertyName: nameof(Title),
+            returnType: typeof(string),
+            declaringType: typeof(NavigationBar),
+            defaultValue: ""
+        );
 
         public static readonly BindableProperty GoBackCommandProperty = BindableProperty.Create(
-               propertyName: nameof(GoBackCommand),
-               returnType: typeof(Command),
-               declaringType: typeof(NavigationBar));
+            propertyName: nameof(GoBackCommand),
+            returnType: typeof(Command),
+            declaringType: typeof(NavigationBar)
+        );
 
-        public static readonly BindableProperty GoBackCommandParameterProperty = BindableProperty.Create(
-               propertyName: nameof(GoBackCommandParameter),
-               returnType: typeof(object),
-               declaringType: typeof(NavigationBar));
+        public static readonly BindableProperty GoBackCommandParameterProperty =
+            BindableProperty.Create(
+                propertyName: nameof(GoBackCommandParameter),
+                returnType: typeof(object),
+                declaringType: typeof(NavigationBar)
+            );
         public string Title
         {
             get => (string)GetValue(TitleProperty);
@@ -57,12 +60,17 @@ namespace Mageki
             }
         }
 
-
         public NavigationBar()
         {
             InitializeComponent();
-            BackButton.SetBinding(TouchEffect.CommandProperty, new Binding("GoBackCommand", source: this));
-            BackButton.SetBinding(TouchEffect.CommandParameterProperty, new Binding("GoBackCommandParameter", source: this));
+            BackButton.SetBinding(
+                TouchEffect.CommandProperty,
+                new Binding("GoBackCommand", source: this)
+            );
+            BackButton.SetBinding(
+                TouchEffect.CommandParameterProperty,
+                new Binding("GoBackCommandParameter", source: this)
+            );
         }
     }
 }

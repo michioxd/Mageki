@@ -1,6 +1,5 @@
-﻿using SkiaSharp;
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using SkiaSharp;
 
 namespace Mageki.Drawables
 {
@@ -23,9 +22,11 @@ namespace Mageki.Drawables
         {
             NeedUpdate = false;
         }
+
         public virtual void Draw(SKCanvas canvas)
         {
-            if (NeedUpdate) Update();
+            if (NeedUpdate)
+                Update();
         }
     }
 }

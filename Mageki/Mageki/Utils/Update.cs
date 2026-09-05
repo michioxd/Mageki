@@ -1,12 +1,9 @@
-﻿using Mageki.Resources;
-
-using Newtonsoft.Json.Linq;
-
-using System;
+﻿using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
-
+using Mageki.Resources;
+using Newtonsoft.Json.Linq;
 using Xamarin.CommunityToolkit.Extensions;
 using Xamarin.CommunityToolkit.UI.Views.Options;
 using Xamarin.Essentials;
@@ -23,17 +20,27 @@ namespace Mageki.Utils
                 await Task.Delay(5000);
                 using HttpClient client = new HttpClient();
                 client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "mageki");
-                using var response = await client.GetAsync("https://api.github.com/repos/sanheiii/mageki/releases/latest");
+                using var response = await client.GetAsync(
+                    "https://api.github.com/repos/sanheiii/mageki/releases/latest"
+                );
                 string responseString = await response.Content.ReadAsStringAsync();
                 JObject data = JObject.Parse(responseString);
                 Version current = Version.Parse(VersionTracking.CurrentVersion);
                 Version latest = Version.Parse(data["tag_name"].Value<string>());
                 if (current < latest && (force || Settings.IgnoredVersion < latest))
                 {
-                    string action = await Application.Current.MainPage.DisplayActionSheet(AppResources.NewVersionAvailable, AppResources.Cancel, AppResources.DoNotRemindMeAgain, AppResources.GoToReleasePage);
+                    string action = await Application.Current.MainPage.DisplayActionSheet(
+                        AppResources.NewVersionAvailable,
+                        AppResources.Cancel,
+                        AppResources.DoNotRemindMeAgain,
+                        AppResources.GoToReleasePage
+                    );
                     if (action == AppResources.GoToReleasePage)
                     {
-                        await Browser.OpenAsync(data["html_url"].Value<string>(), BrowserLaunchMode.SystemPreferred);
+                        await Browser.OpenAsync(
+                            data["html_url"].Value<string>(),
+                            BrowserLaunchMode.SystemPreferred
+                        );
                     }
                     else if (action == AppResources.DoNotRemindMeAgain)
                     {
@@ -56,12 +63,13 @@ namespace Mageki.Utils
                 return CheckVersionResult.Error;
             }
         }
+
         public enum CheckVersionResult
         {
             CanUpdate,
             Ignored,
             Latest,
-            Error
+            Error,
         }
     }
 }

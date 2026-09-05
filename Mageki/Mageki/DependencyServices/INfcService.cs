@@ -6,7 +6,11 @@ namespace Mageki.DependencyServices
 {
     public interface INfcService
     {
-        public bool ReadingAvailable { get; }
-        public void StartReadAime(Action<byte[]> onFelicaScan, Action<byte[]> onMifareScan, Action onInvalidate);
+        bool ReadingAvailable { get; }
+        void StartReadAime(
+            Action<byte[]> onFelicaScan,
+            Action<byte[]> onMifareScan,
+            Action onInvalidate
+        );
     }
 }

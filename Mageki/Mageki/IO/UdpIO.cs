@@ -1,7 +1,4 @@
-﻿
-using Mageki.Utils;
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -9,7 +6,7 @@ using System.Net.Sockets;
 using System.Numerics;
 using System.Threading;
 using System.Timers;
-
+using Mageki.Utils;
 using Timer = System.Timers.Timer;
 
 namespace Mageki
@@ -26,28 +23,28 @@ namespace Mageki
         private IPAddress iP;
 
         public IPEndPoint RemoteEP { get; private set; }
-        public IPAddress IP 
-        { 
-            get => iP; 
+        public IPAddress IP
+        {
+            get => iP;
             set
             {
                 iP = value;
-                if(RemoteEP != null) RemoteEP.Address = value;
-
+                if (RemoteEP != null)
+                    RemoteEP.Address = value;
             }
         }
         public int Port { get; private set; }
 
-        public UdpIO() : this(Settings.IPAddress, Settings.Port)
-        {
+        public UdpIO()
+            : this(Settings.IPAddress, Settings.Port) { }
 
-        }
         public UdpIO(IPAddress ip, int port)
         {
             IP = ip;
             Port = port;
             RemoteEP = new IPEndPoint(IP, Port);
         }
+
         public override void Init()
         {
             try
@@ -58,6 +55,7 @@ namespace Mageki
                 heartbeatTimer.Start();
                 disconnectTimer.Elapsed += DisconnectTimer_Elapsed;
                 pollThread = new Thread(PollThread);
+                pollThread.IsBackground = true;
                 pollThread.Start();
                 Status = Status.Disconnected;
             }
@@ -67,21 +65,33 @@ namespace Mageki
                 Status = Status.Error;
             }
         }
+
         public override void SetGameButton(int index, byte value)
         {
             base.SetGameButton(index, value);
             SendMessage(new byte[] { (byte)MessageType.ButtonStatus, (byte)index, value });
         }
+
         public override void SetLever(short value)
         {
             base.SetLever(value);
-            SendMessage(new byte[] { (byte)MessageType.MoveLever }.Concat(BitConverter.GetBytes(value)).ToArray());
+            SendMessage(
+                new byte[] { (byte)MessageType.MoveLever }
+                    .Concat(BitConverter.GetBytes(value))
+                    .ToArray()
+            );
         }
+
         public override void SetAime(byte scanning, byte[] packet)
         {
             base.SetAime(scanning, packet);
-            SendMessage(new byte[] { (byte)MessageType.Scan, Convert.ToByte(scanning) }.Concat(Data.AimePacket).ToArray());
+            SendMessage(
+                new byte[] { (byte)MessageType.Scan, Convert.ToByte(scanning) }
+                    .Concat(Data.AimePacket)
+                    .ToArray()
+            );
         }
+
         public override void SetOptionButton(OptionButtons button, bool pressed)
         {
             base.SetOptionButton(button, pressed);
@@ -93,6 +103,7 @@ namespace Mageki
             };
             SendMessage(new byte[] { (byte)type, Convert.ToByte(pressed) }.ToArray());
         }
+
         /// <summary>
         /// 用于接收数据并设置LED
         /// </summary>
@@ -111,6 +122,7 @@ namespace Mageki
                 }
             }
         }
+
         // 在没有连接的时候请求连接,有连接时发送心跳保存连接
         private void HeartbeatTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -118,7 +130,10 @@ namespace Mageki
             {
                 SendMessage(new byte[] { (byte)MessageType.Hello, helloRandomValue });
             }
-            catch (Exception ex) { Debug.WriteLine(ex); }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -126,6 +141,7 @@ namespace Mageki
             RemoteEP = new IPEndPoint(IP, Port);
             Status = Status.Disconnected;
         }
+
         private void SendMessage(byte[] data)
         {
             // 没有连接到就不发送数据
@@ -136,19 +152,23 @@ namespace Mageki
             client.Send(data, data.Length, RemoteEP);
         }
 
-
         private void ParseBuffer(byte[] buffer)
         {
-            if (disposedValue || (buffer?.Length ?? 0) == 0) return;
+            if (disposedValue || (buffer?.Length ?? 0) == 0)
+                return;
             if (buffer[0] == (byte)MessageType.SetLed && buffer.Length == 19)
             {
-                SetLed(buffer[1..]);
+                SetLed(buffer.Skip(1).ToArray());
             }
             else if (buffer[0] == (byte)MessageType.SetLever && buffer.Length == 3)
             {
                 Data.Lever = BitConverter.ToInt16(buffer, 1);
             }
-            else if (buffer[0] == (byte)MessageType.Hello && buffer.Length == 2 && buffer[1] == helloRandomValue)
+            else if (
+                buffer[0] == (byte)MessageType.Hello
+                && buffer.Length == 2
+                && buffer[1] == helloRandomValue
+            )
             {
                 if (Status != Status.Connected)
                 {
@@ -162,10 +182,12 @@ namespace Mageki
             //// 用于直接打开测试显示按键
             //Mu3IO._test.UpdateData();
         }
+
         private void RequestValues()
         {
             SendMessage(new byte[] { (byte)MessageType.RequestValues });
         }
+
         #region IDisposable
         protected virtual void Dispose(bool disposing)
         {

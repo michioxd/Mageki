@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
 using Xamarin.Forms;
 
 namespace Mageki.Views
@@ -12,7 +11,8 @@ namespace Mageki.Views
             propertyName: "Tag",
             defaultValue: null,
             returnType: typeof(object),
-            declaringType: typeof(VisualElement));
+            declaringType: typeof(VisualElement)
+        );
 
         public static object GetTag(BindableObject bindable)
         {

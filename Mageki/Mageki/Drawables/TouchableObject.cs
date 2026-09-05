@@ -1,15 +1,12 @@
-﻿using SkiaSharp;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-
+using SkiaSharp;
 using Xamarin.Essentials;
 
 namespace Mageki.Drawables
 {
     public abstract class TouchableObject : Drawable
     {
-
         protected Dictionary<long, SKPoint> touchPoints = new Dictionary<long, SKPoint>();
         public abstract bool HitTest(SKPoint point);
 

@@ -1,10 +1,10 @@
-﻿using Mageki.Utils;
-using SkiaSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Mageki.Utils;
+using SkiaSharp;
 
 namespace Mageki.Drawables
 {
@@ -59,8 +59,10 @@ namespace Mageki.Drawables
             get => GetValue(default(float));
             set
             {
-                if (value < MinPressure) value = MinPressure;
-                else if (value > MaxPressure) value = MaxPressure;
+                if (value < MinPressure)
+                    value = MinPressure;
+                else if (value > MaxPressure)
+                    value = MaxPressure;
                 SetValueWithNotify(value);
             }
         }
@@ -83,11 +85,10 @@ namespace Mageki.Drawables
             set => SetValueWithNotify(value);
         }
 
-
         private SKPaint buttonFramePaint = new SKPaint
         {
             Style = SKPaintStyle.StrokeAndFill,
-            Color = new SKColor(0xFF222222)
+            Color = new SKColor(0xFF222222),
         };
 
         private SKPaint buttonPaint = new SKPaint
@@ -99,25 +100,25 @@ namespace Mageki.Drawables
         private SKPaint buttonBlankPaint = new SKPaint
         {
             Style = SKPaintStyle.Fill,
-            Color = Colors[ButtonColors.Blank]
+            Color = Colors[ButtonColors.Blank],
         };
 
         private SKPaint lightPaint = new SKPaint
         {
             Style = SKPaintStyle.Fill,
-            MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 100)
+            MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 100),
         };
 
         private SKPaint buttonBorderPaint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
-            Color = new SKColor(0xFF222222)
+            Color = new SKColor(0xFF222222),
         };
 
         private SKPaint separatorPaint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
-            Color = new SKColor(0x44666666)
+            Color = new SKColor(0x44666666),
         };
 
         private SKPaint holdMaskPaint = new SKPaint()
@@ -133,9 +134,7 @@ namespace Mageki.Drawables
         SKPath separatorPath = new SKPath();
         SKRect lightBox;
 
-        public SideButton()
-        {
-        }
+        public SideButton() { }
 
         public override void Update()
         {
@@ -172,8 +171,10 @@ namespace Mageki.Drawables
             var buttonTopFaceBottom = boundingBox.Bottom - Padding.Y;
             var buttonTopFaceTop = buttonTopFaceBottom - buttonHeight;
 
-            var buttonSideFaceRight = buttonTopFaceRight + (buttonWidth * (1 + Pressure * 0.6f)) * n;
-            var buttonSideFaceTop = buttonTopFaceTop + (buttonTopFaceBottom - buttonTopFaceTop) * (1f / 16f);
+            var buttonSideFaceRight =
+                buttonTopFaceRight + (buttonWidth * (1 + Pressure * 0.6f)) * n;
+            var buttonSideFaceTop =
+                buttonTopFaceTop + (buttonTopFaceBottom - buttonTopFaceTop) * (1f / 16f);
             var buttonSideFaceBottom = buttonTopFaceBottom - (buttonSideFaceTop - buttonTopFaceTop);
 
             buttonPath.Reset();
@@ -197,14 +198,19 @@ namespace Mageki.Drawables
             separatorPath.MoveTo(buttonTopFaceRight, buttonTopFaceTop);
             separatorPath.LineTo(buttonTopFaceRight, buttonTopFaceBottom);
 
-            buttonFrame = SKRect.Create(buttonSideFaceRight, buttonSideFaceTop, buttonWidth * (Pressure * 0.4f),
-                buttonSideFaceBottom - buttonSideFaceTop);
+            buttonFrame = SKRect.Create(
+                buttonSideFaceRight,
+                buttonSideFaceTop,
+                buttonWidth * (Pressure * 0.4f),
+                buttonSideFaceBottom - buttonSideFaceTop
+            );
 
             lightBox = new SKRect(
                 buttonTopFaceRight + (buttonWidth * 2) * n,
                 buttonTopFaceTop,
                 boundingBox.MidX + (boundingBox.Width / 2) * n,
-                buttonTopFaceBottom);
+                buttonTopFaceBottom
+            );
 
             buttonPaint.Color = Color.Standardization();
             lightPaint.Color = buttonPaint.Color.WithAlpha((byte)(buttonPaint.Color.Alpha));
@@ -213,10 +219,21 @@ namespace Mageki.Drawables
                 new SKPoint(lightBox.Right, lightBox.MidY),
                 new SKColor[]
                 {
-                    new SKColor(lightPaint.Color.Red, lightPaint.Color.Green, lightPaint.Color.Blue, 0xAA),
-                    new SKColor(lightPaint.Color.Red, lightPaint.Color.Green, lightPaint.Color.Blue, 0x44)
+                    new SKColor(
+                        lightPaint.Color.Red,
+                        lightPaint.Color.Green,
+                        lightPaint.Color.Blue,
+                        0xAA
+                    ),
+                    new SKColor(
+                        lightPaint.Color.Red,
+                        lightPaint.Color.Green,
+                        lightPaint.Color.Blue,
+                        0x44
+                    ),
                 },
-                SKShaderTileMode.Clamp);
+                SKShaderTileMode.Clamp
+            );
 
             buttonBorderPaint.StrokeWidth = buttonFramePaint.StrokeWidth = buttonWidth * 0.5f;
             separatorPaint.StrokeWidth = buttonWidth * 0.2f;
@@ -224,10 +241,10 @@ namespace Mageki.Drawables
             base.Update();
         }
 
-
         public override void Draw(SKCanvas canvas)
         {
-            if (!Visible) return;
+            if (!Visible)
+                return;
             base.Draw(canvas);
             canvas.DrawPath(buttonPath, buttonBlankPaint);
             canvas.DrawPath(buttonPath, buttonPaint);
@@ -256,7 +273,8 @@ namespace Mageki.Drawables
             }
         }
 
-        private List<(float value, long touchID)> moveCache = new List<(float value, long touchID)>();
+        private List<(float value, long touchID)> moveCache =
+            new List<(float value, long touchID)>();
 
         public override bool HandleTouchMoved(long id, SKPoint point)
         {

@@ -6,19 +6,14 @@ namespace Mageki.TouchTracking
     public class TouchPoint
     {
         // For painting
-        SKPaint paint = new SKPaint
-        {
-            Style = SKPaintStyle.Fill
-        };
+        SKPaint paint = new SKPaint { Style = SKPaintStyle.Fill };
 
         // For dragging
         bool isBeingDragged;
         long touchId;
         SKPoint previousPoint;
 
-        public TouchPoint()
-        {
-        }
+        public TouchPoint() { }
 
         public TouchPoint(float x, float y)
         {
@@ -81,7 +76,8 @@ namespace Mageki.TouchTracking
 
         bool PointInCircle(SKPoint pt)
         {
-            return (Math.Pow(pt.X - Center.X, 2) + Math.Pow(pt.Y - Center.Y, 2)) < (Radius * Radius);
+            return (Math.Pow(pt.X - Center.X, 2) + Math.Pow(pt.Y - Center.Y, 2))
+                < (Radius * Radius);
         }
     }
 }
